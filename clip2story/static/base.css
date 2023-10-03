@@ -1,0 +1,108 @@
+html{
+    scroll-padding-top: 70px;
+}
+
+body{
+    background-color: #FAF8F0;
+    padding-top: 77px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+ul{
+    align-items: center;
+    background-color: rgb(200, 36, 36);
+    position: fixed;
+    margin-top: 0%;
+    top: 0%;
+    left: 0%;
+    display: flex;
+    justify-content: left;
+    gap: 512px;
+    height: 84px;
+    padding: 16px 53px;
+    width: 100%;
+    padding: 0; 
+    list-style: none;
+}
+
+ul li{
+    font-family: Inter;
+    float: left;
+    display: flex;
+    opacity: .9;
+    line-height: 40px;
+    text-align: center;
+    font-size: 35px;
+    padding-left: 25px;
+}
+
+
+ul li a{
+    text-decoration: none;
+    color: white;
+    display: flex;
+}
+
+ul li a:hover{
+    background-color: rgb(184, 178, 179);
+    border-radius: 10px;
+}
+
+#clip-2-story{
+    text-align: center;
+    color: whitesmoke;
+    font-family: Inter;
+    font-size: var(--font-size-xl);
+    float: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    font-weight: 400;
+    letter-spacing: 0;
+    margin: 0%;
+    line-height: normal;
+}
+
+ul li ul li{
+    display: none;
+}
+
+ul li:hover ul li{
+    display: block;
+}
+
+#logout-button {
+    text-align: right;
+    color: whitesmoke;
+    font-family: Inter;
+    font-size: 20px;
+    float: none;
+    position: absolute;
+    top: 50%;
+    left: 90%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    font-weight: 40;
+    letter-spacing: 0;
+    margin: 0%;
+    line-height: normal;
+}  
+
+#help_page{
+    text-align: right;
+    color: whitesmoke;
+    font-family: Inter;
+    font-size: 28px;
+    float: none;
+    position: absolute;
+    top: 50%;
+    left: 75%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    font-weight: 40;
+    letter-spacing: 0;
+    margin: 0%;
+    line-height: normal;
+}

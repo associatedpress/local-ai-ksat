@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Clip2Story - Login{% endblock %}
+
+{% block extra_stylesheets %}
+    <link rel="stylesheet" href="{% static '/css/login.css' %}">
+{% endblock %}
+
+{% block logout%}{% endblock logout %}
+
+{% block content %}     
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;500;600;700&display=swap" rel="stylesheet"> 
+    </head>
+
+    <body>
+        <div class ="container-wrapper">
+        <div class="container container-1">
+            <h2>How to Use This Tool</h2>
+            <div class="box">
+                <p class="how-to">{{ global_config.help_message_as_html }}</p>
+              </div>    
+        </div>
+        <div class="container container-2">
+            <img src="/static/images/NEWS_ORG_LOGO.png" alt="Logo"> <br><br>
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    {% render_field form.username placeholder="   Username" %}
+                    <br>
+                    {% render_field form.password placeholder="   Password" %}
+                    <br>
+                    <input id="login" type="submit" value="login">
+                    <input type="hidden" name="next" value="{{ next }}">
+                </form>
+
+                {% if form.errors %}
+                    <p>Your username and password didn't match. Please try again.</p>
+                {% endif %}
+          </div>
+        </div>
+        </body>
+    {% endblock content %}

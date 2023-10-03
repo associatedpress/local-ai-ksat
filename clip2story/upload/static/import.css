@@ -1,0 +1,78 @@
+.upload-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.box {
+    background-color: #f1f1f1;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.text-container{
+    text-align: center;
+    padding: 15px 350px;
+    text-align: left;
+}
+
+h2 {
+    text-align: center;
+    color: rgb(200, 36, 36);
+    font-family: 'Lucida Sans';
+    font-size: larger;
+    font-weight: bold;
+    font-size: 2rem;
+    margin-top: 125px;
+}
+
+#progressBar {
+    background-color: #4caf50;
+    height: 20px;
+    margin-top: 10px;
+    border-radius: 5px;
+    color: #fff;
+    text-align: center;
+    line-height: 20px;
+}
+
+#status {
+    margin-top: 10px;
+    color: #333;
+}
+
+#submitBtn {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#submitBtn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+a {
+    color: #4caf50;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+#transcript_selector{
+    margin-bottom: 20px;
+    margin-top: 45px;
+}
+
+#submitBtn{
+    margin-bottom: 20px;
+}

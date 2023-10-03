@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang = "en">
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;500;600;700&display=swap" rel="stylesheet"> 
+        <link rel="stylesheet" type="text/css" href="{% static '/base.css' %}">
+        {% block extra_stylesheets %} {% endblock extra_stylesheets %}
+        <title>{% block title %}Clip2Story{% endblock %}</title>
+    </head>
+
+    <body>
+        <ul>
+            {% block upload %} {% endblock upload %}
+            
+            <li><a id = "clip-2-story" href="{% url 'dashboard:index' %}">Clip2Story</a></li>
+            
+            <li><a id="help_page" href="{% url 'help' %}">Help</a></li>
+
+            {% block logout%}{%endblock logout%}
+        </ul>
+
+        <div id = "page content">
+            {% block content %}{% endblock content %}
+        </div>
+    </body>
+
+</html>

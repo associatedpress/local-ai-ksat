@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Clip2Story - Dashboard{% endblock %}
+
+{% block extra_stylesheets %}
+    {% if status_state == 1 or status_state == 2 %}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+    {% endif %}
+    {% if status_state == 3 %}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0">
+    {% elif status_state == 4 %}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+    {% endif %}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;500;600;700&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel = "stylesheet" href = "{% static '/dashboard.css' %}">
+{% endblock extra_stylesheets %}
+
+{% block upload %} <a class="button" href="{% url 'upload:upload' %}">Upload/Import clips</a> {% endblock upload %}
+
+{% block logout %}
+    {% if user.is_authenticated %}
+        <li><a id="logout-button" href="{% url 'logout' %}">Logout {{ user.username }}</a></li>
+    {% endif %}
+{% endblock logout %}
+
+{% block content %}
+<div class="search-bar">
+    <form method="GET" action="{% url 'dashboard:search' %}">
+        <input type="text" name="search_query" placeholder="Search for uploads">
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<table>
+    <thead> 
+        <h2>All Uploads</h2>
+        <div class = "col_headers">
+        <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Transcript</th>
+            <th>Summary</th>
+            <th>ARC</th>
+            <th>User</th>
+            <th>Date Uploaded</th>
+            <th>Time Uploaded</th>
+            <th>Hold clip indefinitely</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody> 
+        <div class = "table_cells">
+        {% if found_results %}
+            {% for file in files %}
+            <tr>
+                <td>
+                    <span class="title-editable" data-id="{{ file.recording_id }}" contenteditable="true">{{ file.title }}</span>
+                </td>
+                <td>
+                    <select class="prompt-selector" data-id="{{ file.recording_id }}">
+                        <option value="" {% if file.prompt_key is None %}selected{% endif%}>-- Select --</option>
+                        {% for prompt in prompts %}
+                            <option value="{{ prompt.prompt_type }}" {% if prompt.prompt_type == file.prompt_key.prompt_type %}selected{% endif %}>{{ prompt.prompt_type }}</option> 
+                        {% endfor %}
+                    </select> 
+                </td>
+                <td>{{ file.status_text }}</td>
+                <td>
+                    {% if file.status_state == 1 or file.status_state == 2 %}
+                    <i class="material-symbols-outlined orange">cycle</i>
+                    {% endif %}
+                    {{ file.transcript_status }}
+                    {% if file.status_state == 3 %}
+                        <a href="{{ file.transcript_url }}" id="verify_icon" target="_blank">
+                            <span class="tooltip">
+                                <i class="material-symbols-outlined red">warning</i>
+                                <span class="tooltiptext">Verify transcript in Trint</span>
+                            </span>
+                    {% elif file.status_state >= 4 and file.status_state != 10 %}
+                        <a href="{{ file.transcript_url }}" id="complete_transcript" target="_blank">
+                            <span class="tooltip">
+                                <i class="material-symbols-outlined">verified</i>
+                                <span class="tooltiptext">View transcript in Trint</span>
+                            </span>
+                    {% elif file.status_state == 10 %}
+                        <span class="tooltip">
+                            <i class="material-symbols-outlined red">report</i>
+                            <span class="tooltiptext">Error occured.</span>
+                        </span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if file.status_state == 4 %}
+                        <button class="startsummary" {% if not file.prompt_key %}disabled{% endif %} onclick="sendSummarizationRequest('{% url 'dashboard:trigger_summarization' pk=file.pk user_id=user.id%}')">
+                            <span class="tooltip">
+                                <i class="material-symbols-outlined green">cloud_upload</i>
+                                <span class="tooltiptext">{% if not file.prompt_key %}Select a category before summarizing{% else %}Start summarization{% endif %}</span>
+                            </span>
+                        </button>
+                    {% elif file.status_state == 5 %}
+                        <span class="tooltip">
+                            <i class="material-symbols-outlined orange">cycle</i>
+                            <span class="tooltiptext">Generating summary</span>
+                        </span>
+                    {% elif file.status_state >= 6 and file.status_state != 10 %}
+                        <!--when tags are done generating, then finished icon will appear-->
+                        <button class="startsummary" {% if not file.prompt_key %}disabled{% endif %} onclick="sendSummarizationRequest('{% url 'dashboard:trigger_summarization' pk=file.pk user_id=user.id%}')">
+                            <span class="tooltip">
+                                <i class="material-symbols-outlined green">redo</i>
+                                <span class="tooltiptext">{% if not file.prompt_key %}Select a category before summarizing{% else %}Regenerate summary{% endif %}</span>
+                            </span>
+                        </button>
+                    {% else %}
+                        <i class="material-symbols-outlined grey">cloud_upload</i>
+                    {% endif %}
+                    {{ file.summary_status }}
+                </td>
+                <td>
+                    {% if file.status_state == 9 %}
+                        <a href="{{ file.summary_url }}" id="ARC_exported" target="_blank">
+                            <span class="tooltip">
+                                <i class="material-symbols-outlined green">exit_to_app</i>
+                                <span class="tooltiptext">View summary in ARC</span>
+                            </span>
+                    {% else %}
+                        <i class="material-symbols-outlined grey">exit_to_app</i>    
+                    {% endif %}
+                </td>
+                <td>{{ file.uploaded_by_user }}</td>
+                <td class='utc-date' data-isodatetime='{{ file.uploaded_dt|date:"c" }}'>{{ file.uploaded_dt|date:"m-d-Y" }}</td>
+                <td class='utc-time' data-isodatetime='{{ file.uploaded_dt|date:"c" }}'>{{ file.uploaded_dt|time:"H:i:s" }}</td>
+                <td><input id="holdCheckbox" type="checkbox" {% if file.hold_indefinitely %} checked="True" {% endif %} onclick="sendHoldRequest('{% url 'dashboard:hold_recording' pk=file.pk %}')" ></td>
+                <td><button id="delete" onclick="sendDeleteRequest('{% url 'dashboard:delete_recording' pk=file.pk %}')">Delete Clip</button></td>
+            </tr>
+            {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="8" class="no-results">No results found</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+<script>
+    //Following code section handles editing the title, it responds on pressing enter to submit or exiting the edit box to submit
+    document.addEventListener('DOMContentLoaded', function() 
+    {
+        var titleEditables = document.querySelectorAll('.title-editable');
+
+        titleEditables.forEach(function(titleEditable) 
+        {
+            titleEditable.addEventListener('focusout', function() 
+            {
+                updateTitle(this);
+            });
+        
+            titleEditable.addEventListener('keypress', function(event) 
+            {
+                if (event.which === 13 || event.keyCode === 13) 
+                {
+                    updateTitle(this);
+                    this.blur(); // Remove focus after pressing Enter key
+                }
+            });
+        });
+    
+        function updateTitle(element) 
+        {
+            var fileId = element.getAttribute('data-id');
+            var newValue = element.textContent;
+    
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', "{% url 'dashboard:update_file_title' %}");
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() 
+            {
+                if (xhr.status === 200) 
+                {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.success) 
+                    {
+                        alert('Title updated successfully!');
+                    } 
+                    else 
+                    {
+                        alert('Error occurred while updating title.');
+                    }
+                } 
+                else 
+                {
+                    alert('Error occurred while updating title.');
+                }
+            };
+            xhr.onerror = function() 
+            {
+                alert('Error occurred while updating title.');
+            };
+            xhr.send('file_id=' + encodeURIComponent(fileId) +
+                     '&value=' + encodeURIComponent(newValue) +
+                     '&csrfmiddlewaretoken=' + encodeURIComponent('{{ csrf_token }}'));
+        }
+    });
+
+    //Following code handles updating the hold indefinitely field for a Recording
+    function sendHoldRequest(url) 
+    {  
+        // Send the GET request to toggle the hold indefinitely field
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.setRequestHeader('X-CSRFToken', "{{ csrf_token }}");
+        xhr.send();
+    }
+
+    //Following code handles the delete request, makes sure a popup occurs to make sure you meant to delete the file in question
+    function sendDeleteRequest(url)
+    {
+        var confirmDelete = confirm("Are you sure you want to delete this upload?");
+                
+        if (confirmDelete) 
+        {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true)
+            xhr.setRequestHeader('X-CSRFToken', "{{ csrf_token }}");
+            xhr.send();
+            setTimeout(function() 
+            {
+                location.reload();
+            }, 2000);
+            
+        }
+    }
+
+    //Following code handles triggering the summarization for the specified Recording
+    function sendSummarizationRequest(url) 
+    {  
+        // Send the GET request to toggle the hold indefinitely field
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.setRequestHeader('X-CSRFToken', "{{ csrf_token }}");
+        xhr.send();
+        alert('Summary generating');
+    }
+
+    //Following code handles updating the prompt category selection on the backend
+    document.addEventListener('DOMContentLoaded', function() 
+    {
+        var promptSelectors = document.querySelectorAll('.prompt-selector');
+
+        promptSelectors.forEach(function(promptSelector)
+        {
+            promptSelector.addEventListener('change', function() 
+            {
+                var selectedPrompt = this.value;
+                var file_id = this.getAttribute('data-id');
+                if (selectedPrompt !== "")
+                {
+                    sendSelection(selectedPrompt, file_id);
+                }
+            });
+        });
+
+        function sendSelection(selection, file_id) 
+        {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', "{% url 'dashboard:update_prompt_selection' %}");
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() 
+            {
+                if (xhr.status === 200) 
+                {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.success) 
+                    {
+                        alert('Category selection saved');
+                    } 
+                    else 
+                    {
+                        alert('Error occurred while updating category selection.');
+                    }
+                } 
+                else 
+                {
+                    alert('Error occurred while updating category selection.');
+                }
+            };
+            xhr.onerror = function() 
+            {
+                alert('Error occurred while updating category selection.');
+            };
+            xhr.send('selection=' + encodeURIComponent(selection) +
+                     '&file_id=' + encodeURIComponent(file_id) +
+                     '&csrfmiddlewaretoken=' + encodeURIComponent('{{ csrf_token }}'));
+
+            setTimeout(function() 
+            {
+                location.reload();
+            }, 2000);
+        }
+    });
+
+    //Following code converts the UTC times provided by django into a localized time for the user
+    window.onload = function() 
+    {
+        const dateRows = document.querySelectorAll('.utc-date');
+        const timeRows = document.querySelectorAll('.utc-time');
+        dateRows.forEach(function(date) 
+        {
+            const datetimeString = date.dataset.isodatetime;
+            
+            localizeDate(datetimeString, date);
+        });
+
+        timeRows.forEach(function(time) 
+        {
+            const datetimeString = time.dataset.isodatetime;
+            
+            localizeTime(datetimeString, time);
+        });
+    };
+
+    function localizeDate(datetimeString, dateElement) 
+    {
+        const datetime = new Date(datetimeString); //convert ISO datetime string into a datimetime object
+        const timezoneOffset = datetime.getTimezoneOffset()*60; //turn timezone offset which is in minutes into seconds
+        datetime.setTime(datetime.getTime() - timezoneOffset); //grab the time in seconds and subtract the offset to convert from UTC to the users local time
+
+        const formattedDate = datetime.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }); //reformat the datetime object into a string
+
+        dateElement.textContent = formattedDate; //set the string as the text for the passed in html element
+    }
+
+    function localizeTime(datetimeString, timeElement)
+    {
+        const datetime = new Date(datetimeString);
+        const timezoneOffset = datetime.getTimezoneOffset()*60;
+        
+        datetime.setTime(datetime.getTime() - timezoneOffset);
+
+        const formattedTime = datetime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        timeElement.textContent = formattedTime;
+    }
+</script>
+
+{% endblock content %}

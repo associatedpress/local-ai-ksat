@@ -1,0 +1,47 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color:white;
+}
+
+.container-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f2f2f2;
+    font-family: 'Montserrat', sans-serif;
+    margin-top: 0px;
+}
+  
+.container-1 {
+    max-width: 600px;
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+  
+.subtitle {
+    color: #555555;
+    font-weight: 300;
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+  
+.box {
+    border: 1px solid #dddddd;
+    padding: 20px;
+    height: auto;
+}
+  
+.how-to {
+    margin: 0;
+}
+
+.tool_descrip{
+    font-style: italic;
+}
+
+h2{
+    color: rgb(200, 36, 36);
+}
+  

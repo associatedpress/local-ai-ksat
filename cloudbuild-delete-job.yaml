@@ -1,0 +1,36 @@
+steps:
+  - id: "build image"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-f", "Dockerfile.delete_recording_job", "-t", "${_DOCKER_HOST}/${PROJECT_ID}/${_REPO_NAME}/${_JOB_NAME}", "."]
+
+  - id: "push image"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["push", "${_DOCKER_HOST}/${PROJECT_ID}/${_REPO_NAME}/${_JOB_NAME}"]
+
+  - id: "deploy"
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      [
+        "run", "jobs", "deploy", "${_JOB_NAME}",
+        "--region", "${_REGION}",
+        "--image", "${_DOCKER_HOST}/${PROJECT_ID}/${_REPO_NAME}/${_JOB_NAME}:latest",
+        "--set-cloudsql-instances", "${PROJECT_ID}:${_REGION}:${_CLOUD_SQL_INSTANCE_NAME}",
+        "--set-env-vars=CLOUDRUN_JOB=True,DJANGO_SETTINGS_MODULE=clip2story.settings.${_ENVIRONMENT}",
+        "--set-secrets=DATABASE_URL=${_DB_SECRET},SECRET_KEY=${_SECRET_KEY},GS_BUCKET_NAME=${_GS_BUCKET_NAME_SECRET}"
+      ]
+
+substitutions:
+  _CLOUD_SQL_INSTANCE_NAME: summarize-prod
+  _ENVIRONMENT: prod
+  _REGION: us-central1
+  _DB_SECRET: projects/636526626580/secrets/DATABASE_URL/versions/latest
+  _SECRET_KEY: projects/636526626580/secrets/SECRET_KEY/versions/latest
+  _GS_BUCKET_NAME_SECRET: projects/636526626580/secrets/GS_BUCKET_NAME/versions/latest
+  _DOCKER_HOST: us-central1-docker.pkg.dev
+  _REPO_NAME: summarize-jobs
+  _JOB_NAME: delete-recordings
+
+
+images:
+  - "${_DOCKER_HOST}/${PROJECT_ID}/${_REPO_NAME}/${_JOB_NAME}"

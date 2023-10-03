@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Clip2Story - Import clips{% endblock title%}
+
+{% block content %}
+
+{% block extra_stylesheets %}
+    <link rel = "stylesheet" href = "{% static 'import.css' %}">
+{% endblock extra_stylesheets %}
+
+{% block logout %}
+    {% if user.is_authenticated %}
+        <li><a id="logout-button" href="{% url 'logout' %}">Logout {{ user.username }}</a></li>
+    {% endif %}
+{% endblock logout %}
+
+<h2>Import transcripts from Trint</h2>
+<div class = "import-page">
+    <div class = "box">
+        {% if transcripts|length > 0 %}
+            <select id="transcript_selector" onchange="change_selection_elements()" onload="change_selection_elements()">
+                <option value="" selected>-- Select --</option>
+                {% for transcript in transcripts %}
+                    <option value="{{ transcript.id }}" data-title="{{ transcript.title }}">{{ transcript.title }}</option>
+                {% endfor %}
+            </select>
+
+            <form method="post" action="" id="fileForm" name="import_file_form" enctype="multipart/form-data">
+                {% csrf_token %}
+            
+                {{form}} <!--The form is hidden and the value of the fields are modified in the javascript before submitting the file for upload-->
+
+                <button type="submit" id="submitBtn" disabled>
+                    Submit
+                </button>
+            </form>
+            <div class="text-container">
+                <label for="verified_checkbox"><b>IMPORTANT:</b> Click the checkbox below if your selected transcript is already verified. If the transcript is verified but you don't click this box, you will have to delete the uploaded clip and import it again.</label>
+                <input type="checkbox" id="verified_checkbox">
+                <a href="#" id="transcript_link" target="">Selected transcript is verified</a>
+            </div>
+        {% else %}
+            <p>No transcripts are in Trint currently</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function _(el) {
+        return document.getElementById(el);
+    }
+
+    // function changes transcript link and submit button state depending on the dropdown selection
+    function change_selection_elements()
+    {
+        var transcript_selection = _("transcript_selector").value;
+        var transcript_link      = _("transcript_link");
+        var submit_button        = _("submitBtn");
+
+        if(transcript_selection != "")
+        {
+            transcript_link.href = "https://app.trint.com/editor/" + transcript_selection;
+            transcript_link.target = "_blank";
+            submit_button.disabled = false;
+        }
+        else
+        {
+            transcript_link.href = "#";
+            transcript_link.target = "";
+            submit_button.disabled = true;
+        }
+    }
+
+    //Had to do this because the form wasn't properly populating on firefox and the form needed to be manually submitted for it to work.
+    function manuallySubmitForm() {
+        _("fileForm").submit(); //This is only to trigger the get_successful_url() function in the views.py. The form is submitted in the line above. Its stupid but it works
+    }
+
+    _("submitBtn").addEventListener("click", (event) => {
+        _("submitBtn").disabled = true;
+        handleSubmit(event);
+    });
+
+    const handleSubmit = async (event) => {
+        event.preventDefault(); // Prevent the default form submission, we need this for firefox for some reason
+        var transcript_selector = _("transcript_selector");
+        var selected_option = transcript_selector.selectedOptions[0];
+        
+        // Modifies the contents of the hidden form for creating a Recording model to associate with this upload
+        _("id_title").value = selected_option.getAttribute("data-title").split('.')[0]; //grab the file name and strip the file extension
+        _("id_status_text").value = "In Progress";
+
+
+        //0=Nothing, 1=Uploading, 2=Transcribing, 3=Trascribed, 4=Verified, 5=Summarizing, 6=Summarized, 7=Generating tags, 8=Tags generated, 9=In ARC, 10=Error
+        if(_("verified_checkbox").checked) //if the checkbox indicating the transcript is verified is checked, set the status accordingly
+        {
+            _("id_status_state").value = 4;
+        }
+        else
+        {
+            _("id_status_state").value = 3;
+        }
+        
+        _("id_uploaded_by_user").value = "{{ user.id }}";
+        _("id_hold_indefinitely").value = false;
+        _("id_transcript_vendor_id").value = transcript_selector.value;
+        _("id_imported").value = true;
+
+        setTimeout(function() { //wait 2 seconds before triggering a redirect to the dashboard
+            manuallySubmitForm();
+        }, 2000);
+        
+    };
+</script>
+
+</body>
+{% endblock content%}

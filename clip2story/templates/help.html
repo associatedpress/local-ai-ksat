@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Clip2Story - Help{% endblock %}
+
+{% block extra_stylesheets %}
+    <link rel="stylesheet" href="{% static '/css/help.css' %}">
+{% endblock %}
+
+{% block logout %}
+    {% if user.is_authenticated %}
+        <li><a id="logout-button" href="{% url 'logout' %}">Logout {{ user.username }}</a></li>
+    {% endif %}
+{% endblock logout %}
+
+{% block content %}     
+    <head>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;500;600;700&display=swap" rel="stylesheet"> 
+    </head>
+
+    <body>
+        <div class ="container-wrapper">
+            <div class="container container-1">
+                <p class = "tool_descrip">This tool will take your uploaded video clip, send it to Trint to be transcribed, then take that transcript for OpenAI to summarize.</p>
+                <h2>How to Use Clip2Story</h2>
+                <div class="box">
+                    <p class="how-to">{{ global_config.help_message_as_html }}</p>
+                </div>    
+            </div>
+        </div>
+    </body>
+    {% endblock content %}

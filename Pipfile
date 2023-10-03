@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+psycopg2-binary      = "*"
+pillow               = "*"
+django-widget-tweaks = "*"
+google-cloud-storage = "*"
+django-cors-headers  = "*"
+openai               = "*"
+tiktoken             = "*"
+google-cloud-logging = "*"
+django-environ = "*"
+django-storages = {extras = ["google"], version = "*"}
+gunicorn = "*"
+google-cloud-secret-manager = "*"
+
+[dev-packages]
+django-debug-toolbar = "*"
+django-extensions = "*"

@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Clip2Story - Upload clips{% endblock title%}
+
+{% block content %}
+
+{% block extra_stylesheets %}
+    <link rel = "stylesheet" href = "{% static 'upload.css' %}">
+{% endblock extra_stylesheets %}
+
+{% block logout %}
+    {% if user.is_authenticated %}
+        <li><a id="logout-button" href="{% url 'logout' %}">Logout {{ user.username }}</a></li>
+    {% endif %}
+{% endblock logout %}
+
+<h2>Upload video clips</h2>
+<div class = "upload-page">
+    <div class = "box">
+        
+        <input type="file" id="id_upload_file">
+
+        <form method="post" action="" id="fileForm" name="upload_file_form" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {{form}} <!--The form is hidden and the value of the fields are modified in the javascript before submitting the file for upload-->
+
+            <div id="progressBar" style="width: 0%">
+                0%
+            </div>
+
+            <div>
+                <h3 id="status"></h3>
+            </div>
+
+            <button type="submit" id="submitBtn">
+                Submit
+            </button>
+
+        </form>
+
+        <div class="button-contain">
+            <a href="{% url 'upload:import' %}" class="importBtn">Looking to import videos already in Trint? Click here</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    let submitting = false;
+    let file = null;
+    let modified_filename = null;
+
+    //Currently supported filetypes by the transcription service of choice (Trint 5/31/23)
+    let whitelist_filetypes = ["MP3", "M4A", "MP4", "AAC", "WAV", //Audio formats
+                               "MP4", "WMA", "MOV", "AVI"];      //Video formats
+    
+    function setIsSubmitting(val) {
+        submitting = val;
+    }
+    
+    function setFile(val) {
+        file = val;
+
+        //Appends UTC seconds since epoch and the uploading user's username to the filename so there aren't collisions on GCP. 
+        //test.mp4 becomes test_1686449242656_RyanLeahy.mp4 for example
+        modified_filename = file.name.split('.')[0] + "_CLIP2STORY_" + Date.now() + "_" + "{{ user }}" + "." + file.name.split('.')[1];
+    }
+    
+    function _(el) {
+        return document.getElementById(el);
+    }
+    
+    _("id_upload_file").addEventListener("change", (event) => {
+        setFile(event.target.files[0]);
+    });
+    
+    _("submitBtn").addEventListener("click", (event) => {
+        _("submitBtn").disabled = true;
+        handleSubmit(event);
+    });
+    
+    const handleSubmit = async (event) => {
+        event.preventDefault(); // Prevent the default form submission, we need this for firefox for some reason
+    
+        //This one-liner checks the incoming filetype against the whitelist of allowed filetypes to ensure the user is uploading an allowed file_type
+        if(whitelist_filetypes.some(item => file.type.toLowerCase().includes(item.toLowerCase()))) {
+            setIsSubmitting(true);
+
+            _("status").innerText = ""; //clear status tag in case last submission was an invalid file type and now its valid
+        
+            const signedUrl = await getSignedUrl();
+        
+            // Modifies the contents of the hidden form for creating a Recording model to associate with this upload
+            _("id_title").value = file.name.replace(/\.[^/.]+$/, ""); //strips anything after a period (get rid of file extension)
+            _("id_upload_filename").value = modified_filename;
+            _("id_upload_filetype").value = file.type;
+            _("id_status_text").value = "In Progress";
+            _("id_status_state").value = 1; //0=Nothing, 1=Uploading, 2=Transcribing, 3=Trascribed, 4=Verified, 5=Summarizing, 6=Summarized, 7=Generating tags, 8=Tags generated, 9=In ARC, 10=Error
+            _("id_uploaded_by_user").value = "{{ user.id }}";
+            _("id_hold_indefinitely").value = false;
+        
+            try {
+                uploadFile(signedUrl);
+            } catch (err) {
+                setIsSubmitting(false);
+                console.log(err);
+                alert("There was an error uploading your file.");
+                throw err;
+            }
+        
+            setIsSubmitting(false);
+        }
+        else {
+            let errorString = "Invalid file-type, allowed file-types: ";
+
+            //Generate error message that specifies the allowed file-types. This is helpful in case the whitelist changes in the future.
+            for (let i = 0; i < whitelist_filetypes.length - 1; i++) {
+                errorString += whitelist_filetypes[i] + ", ";
+            }
+            errorString += whitelist_filetypes[whitelist_filetypes.length - 1];
+
+            //Sets the status to indicate that you are using the wrong file type
+            _("status").innerText = errorString;
+
+            //re-enable submit button so user can resubmit a new file
+            _("submitBtn").disabled = false;
+        }
+    };
+    
+    const getSignedUrl = async () => {
+        const body = {
+            fileName: modified_filename,
+            fileType: file.type
+        };
+    
+        const response = await fetch("{% url 'upload:signed-url' %}", {
+            method: "POST",
+            body: JSON.stringify(body),
+            headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}", 'Access-Control-Allow-Origin': '*'}
+        });
+
+        const { url } = await response.json();
+        
+        return url;
+    };
+
+    function uploadFile(signedUrl) {
+        var ajax = new XMLHttpRequest();
+        ajax.upload.addEventListener("progress", progressHandler, false);
+        ajax.addEventListener("load", completeHandler, false);
+        ajax.addEventListener("error", errorHandler, false);
+        ajax.addEventListener("abort", abortHandler, false);
+        ajax.addEventListener("loadend", loadendHandler, false);
+        ajax.open("PUT", signedUrl);
+        ajax.setRequestHeader("Content-Type", file.type);
+        ajax.setRequestHeader('Access-Control-Allow-Origin', '*');
+        ajax.send(file);
+    }
+    
+    //Had to do this because the form wasn't properly populating on firefox and the form needed to be manually submitted for it to work.
+    function manuallySubmitForm() {
+        _("fileForm").submit(); //This is only to trigger the get_successful_url() function in the views.py. The form is submitted in the line above. Its stupid but it works
+    }
+
+    function loadendHandler(event) {
+        _("submitBtn").disabled = false;
+    }
+    
+    function progressHandler(event) {
+        var percent = Math.round((event.loaded / event.total) * 100);
+        _("progressBar").style.width = `${percent}%`;
+        _("progressBar").innerText = `${percent}%`;
+        _("status").innerHTML = percent + "% uploaded... please wait";
+    }
+    
+    function completeHandler(event) {
+        //Gives enough time for the form to populate.
+        //Form is only submitted if the file is successfully sent to the signed url
+        setTimeout(function() {
+            manuallySubmitForm();
+        }, 2000);
+    }
+    
+    function errorHandler(event) {
+        _("status").innerHTML = "Upload Failed";
+    }
+    
+    function abortHandler(event) {
+        _("status").innerHTML = "Upload Aborted";
+    }
+</script>
+
+</body>
+{% endblock content%}

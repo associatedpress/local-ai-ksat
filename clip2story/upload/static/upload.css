@@ -1,0 +1,92 @@
+.upload-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #FAF8F0;
+    margin-top: -270px;
+}
+  
+h2 {
+    text-align: center;
+    color: rgb(200, 36, 36);
+    font-family: 'Lucida Sans';
+    font-size: larger;
+    font-weight: bold;
+    font-size: 2rem;
+    margin-top: 125px;
+    padding-bottom: 25px;
+}
+  
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2rem;
+}
+
+.box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -50px;
+}
+  
+input[type="file"] {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    background-color: #fff;
+}
+  
+button[type="submit"] {
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-top: 10px;
+    cursor: pointer;
+    opacity: 0.8; 
+    transition: opacity 0.3s ease;
+}
+  
+button[type="submit"]:hover {
+    background-color: #00cc00;
+}
+  
+button[type="submit"]:before {
+    opacity: 0;
+}
+  
+button[type="submit"]:hover:before {
+    opacity: 1;
+}
+
+#progressBar{
+    background-color: #007bff;
+    height: 20px;
+    text-align: center;
+    color: white;
+    border-radius: 5px;
+}
+
+.button-contain{
+    margin-top: 45px;
+}
+
+.importBtn{
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50; 
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+  
+.importBtn:hover {
+    background-color: #45a049;
+}

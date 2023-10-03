@@ -1,0 +1,74 @@
+steps:
+  - id: "build image"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "${_DOCKER_HOST}/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}", "."]
+
+  - id: "push image"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["push", "${_DOCKER_HOST}/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}"]
+
+  - id: "apply migrations"
+    name: "gcr.io/google-appengine/exec-wrapper"
+    args:
+      [
+        "-i", "${_DOCKER_HOST}/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}",
+        "-s", "${PROJECT_ID}:${_REGION}:${_CLOUD_SQL_INSTANCE_NAME}",
+        "-e", "SETTINGS_NAME=${_SECRET_SETTINGS_NAME}",
+        "-e", "DJANGO_SETTINGS_MODULE=clip2story.settings.${_ENVIRONMENT}",
+        "--",
+        "python",
+        "manage.py",
+        "migrate",
+      ]
+
+  - id: "collect static"
+    name: "gcr.io/google-appengine/exec-wrapper"
+    args:
+      [
+        "-i", "${_DOCKER_HOST}/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}",
+        "-s", "${PROJECT_ID}:${_REGION}:${_CLOUD_SQL_INSTANCE_NAME}",
+        "-e", "SETTINGS_NAME=${_SECRET_SETTINGS_NAME}",
+        "-e", "DJANGO_SETTINGS_MODULE=clip2story.settings.${_ENVIRONMENT}",
+        "--",
+        "python",
+        "manage.py",
+        "collectstatic",
+        "--verbosity",
+        "2",
+        "--no-input",
+      ]
+
+  - id: "deploy"
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+          [
+            "run", "deploy", "${_SERVICE_NAME}",
+            "--platform", "managed",
+            "--region", "${_REGION}",
+            "--image", "${_DOCKER_HOST}/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}",
+            "--add-cloudsql-instances", "${PROJECT_ID}:${_REGION}:${_CLOUD_SQL_INSTANCE_NAME}",
+            "--set-env-vars=CLOUDRUN_SERVICE_URL=${_CLOUDRUN_SERVICE_URL}",
+            "--set-env-vars=GOOGLE_APPLICATION_CREDENTIALS=${_GCP_CREDENTIALS_PATH}",
+            "--set-env-vars=DJANGO_SETTINGS_MODULE=clip2story.settings.${_ENVIRONMENT}",
+            "--set-env-vars=DEBUG=${_DEBUG}",
+            "--memory=1024Mi",
+            "--cpu=1",
+            "--cpu-boost",
+            "--allow-unauthenticated",
+          ]
+
+substitutions:
+  _DEBUG: "False"
+  _GCP_CREDENTIALS_PATH: /app/clip2story/certs/sv_keys.json
+  _CLOUD_SQL_INSTANCE_NAME: summarize-prod
+  _CLOUDRUN_SERVICE_URL: https://GCP_DOMAIN.run.app
+  _DOCKER_HOST: us-central1-docker.pkg.dev
+  _REPO_NAME: summarize-prod
+  _SERVICE_NAME: www-prod
+  _ENVIRONMENT: prod
+  _REGION: us-central1
+  _SECRET_SETTINGS_NAME: django_settings_prod
+
+images:
+  - "${_DOCKER_HOST}/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}"
