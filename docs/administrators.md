@@ -77,3 +77,6 @@ Once those two fields are filled out, save it and it will now be available in th
 Generating an initial prompt can seem daunting. It might seem funny to do so, but the best way I have found to generate a decent initial prompt is asking [ChatGPT](https://chat.openai.com/) to do such. Explain that you need to generate a prompt for GPT and give it your initial requirements.
 
 Plug that initial prompt in and generate a summary. Read over the summary and make notes of what it could do better, pull out numbers more, try to discern fact from opinion, etc. Take those notes and give them to ChatGPT again to regenerate the prompt. Once the updated prompt is plugged in, regenerate the summary. Rinse and repeat until you are satisfied.
+
+# Entity Relationship Diagram
+<img src="KSAT ERD for Case Study.png" alt="Entity Relationship Diagram">
