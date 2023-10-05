@@ -244,9 +244,9 @@ Use your superuser credentials to log into:
 
 At the end of the MVP development period, these were the features that we thought would be useful to have in the future:
 
-- Integration with a variety of other transcription services, especially an OpenAI Whisper model because it performed really well in a separate project for Michigan Radio.
-- Integration with a variety of other content management systems
-- Native UI management and help guides that do not use the Django interface
+- [ ] Integration with a variety of other transcription services, especially an OpenAI Whisper model because it performed really well in a separate project for Michigan Radio.
+- [ ] Integration with a variety of other content management systems
+- [ ] Native UI management and help guides that do not use the Django interface
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
