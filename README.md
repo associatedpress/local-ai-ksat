@@ -91,6 +91,7 @@ This project was originally built for KSAT-TV in San Antonio, Texas. The Associa
 
 The development team thanks the staff at [KSAT-TV](https://www.ksat.com/) and [Graham Media Group](https://www.grahammedia.com/) for proposing this project, and for their participation, feedback, and encouragement.
 
+<img src="docs/Screenshot-Dashboard.png">
 
 ### Project Objectives
 
@@ -105,10 +106,12 @@ Clip2Story functions through this process:
 
 1. **Video Upload:** The system takes an input of pre-edited video clips uploaded via the web application or via the Trint transcription service.
 2. **Transcription:** A transcript of the video is generated via a call to the Trint API.
-3. **Approval of Transcript:** After a transcript is completed, the system awaits a journalist to review and/or edit the transcript for accuracy.
-4. **Summarization:** The validated transcript is summarized via a call to OpenAI's GPT 3.5 Turbo model via API.
+3. **Approval of Transcript:** After a transcript is completed, the system awaits a journalist to review and/or edit the transcript for accuracy. (The dashboard is seen in the above image.)
+4. **Summarization:** The validated transcript is summarized via a call to OpenAI's GPT 3.5 Turbo model via API. (GPT prompts are controlled via the Django Administration interface, see image below.)
 5. **Keywording:** Relevant tags for the transcript are generated via a call to OpenAI's GPT 3.5 Turbo model via API.
 6. **Publication:** The summary and keywords are uploaded to the Arc XP CMS via API as a draft story for review by a journalist.
+
+<img src="docs/Screenshot-Django-OpenAI.png">
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
