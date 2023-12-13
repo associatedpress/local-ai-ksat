@@ -165,13 +165,13 @@ createdb summarizerdb
 Grab a copy of the codebase and install Python requirements.
 
 ```sh
-git clone git@github.com:couric/summarize.git
-cd summarize/
+git clone git@github.com:associatedpress/local-ai-ksat.git
+cd local-ai-ksat
 pipenv install --dev
 ```
 
 > NOTE: All of the following commands should be executed
-> on the command line, from the top-level `summarize/` directory,
+> on the command line, from the top-level `local-ai-ksat/` directory,
 > unless otherwise specified.
 
 Set up a `.env` file to store secrets and other project-specific environment variables.
@@ -190,7 +190,7 @@ Migrate your local database (this will create all tables, fields, etc.).
 
 ```sh
 # If you haven't already done so, activate the virtual environment
-# by running "pipenv shell" from the top-level "summarize/" directory
+# by running "pipenv shell" from the top-level "local-ai-ksat/" directory
 
 # Then navigate to the clip2story/ directory and update the database
 cd clip2story/
@@ -222,7 +222,7 @@ For day-to-day usage, use the below commands.
 
 ```sh
 # Activate the virtual environment
-cd summarize/
+cd local-ai-ksat/
 pipenv shell
 
 # Fire up the dev server
