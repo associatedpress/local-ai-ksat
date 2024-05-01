@@ -31,7 +31,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/associatedpress/">
-    <img src="https://www.ap.org/assets/images/ap.svg" alt="AP Logo" width="75" height="88">
+    <img src="https://www.ap.org/wp-content/themes/apnews/assets/images/ap-news-logo.svg" alt="AP Logo" width="75" height="88">
   </a>
 
 <h3 align="center">Clip2Story</h3>
